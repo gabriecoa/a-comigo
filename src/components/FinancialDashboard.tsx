@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Plus, TrendingUp, TrendingDown, Wallet, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import GoalsDialog, { Goal } from './GoalsDialog';
+import GoalsCard from './GoalsCard';
 
 interface Transaction {
   id: string;
@@ -38,6 +40,7 @@ const CATEGORY_COLORS = {
 
 export default function FinancialDashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
@@ -111,70 +114,77 @@ export default function FinancialDashboard() {
             <p className="text-muted-foreground mt-2">Controle suas finanças de forma inteligente</p>
           </div>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-primary hover:opacity-90 shadow-glow">
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Transação
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="backdrop-blur-md bg-card/80 border-border/50">
-              <DialogHeader>
-                <DialogTitle>Adicionar Transação</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Tipo</Label>
-                  <Select value={transactionType} onValueChange={(value: 'income' | 'expense') => setTransactionType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="income">Receita</SelectItem>
-                      <SelectItem value="expense">Despesa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label>Valor (R$)</Label>
-                  <Input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-                
-                <div>
-                  <Label>Categoria</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES[transactionType].map((cat) => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label>Descrição</Label>
-                  <Input
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Descreva a transação"
-                  />
-                </div>
-                
-                <Button onClick={handleAddTransaction} className="w-full bg-gradient-primary">
-                  Adicionar Transação
+          <div className="flex gap-3">
+            <GoalsDialog 
+              goals={goals}
+              onGoalsUpdate={setGoals}
+              categories={CATEGORIES}
+            />
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-primary hover:opacity-90 shadow-glow">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Transação
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="backdrop-blur-md bg-card/80 border-border/50">
+                <DialogHeader>
+                  <DialogTitle>Adicionar Transação</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Tipo</Label>
+                    <Select value={transactionType} onValueChange={(value: 'income' | 'expense') => setTransactionType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="income">Receita</SelectItem>
+                        <SelectItem value="expense">Despesa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label>Valor (R$)</Label>
+                    <Input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label>Categoria</Label>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES[transactionType].map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label>Descrição</Label>
+                    <Input
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Descreva a transação"
+                    />
+                  </div>
+                  
+                  <Button onClick={handleAddTransaction} className="w-full bg-gradient-primary">
+                    Adicionar Transação
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -292,6 +302,13 @@ export default function FinancialDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Goals Progress */}
+        <GoalsCard 
+          goals={goals}
+          totalIncome={totalIncome}
+          expensesByCategory={expensesByCategory}
+        />
       </div>
     </div>
   );
